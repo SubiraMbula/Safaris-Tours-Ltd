@@ -1,0 +1,79 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUserData() {
+      let path = /databases/$(database)/documents/users/$(request.auth.uid);
+      return exists(path) ? get(path).data : {};
+    }
+    
+    function isAdmin() {
+      let data = getUserData();
+      return isAuthenticated() && (
+        (data.get('role', '') == 'admin') || 
+        (request.auth.token.email == "subbysav123@gmail.com" && request.auth.token.email_verified == true)
+      );
+    }
+    
+    function isSales() {
+      return isAuthenticated() && getUserData().get('role', '') == 'sales';
+    }
+    
+    function isSupport() {
+      return isAuthenticated() && getUserData().get('role', '') == 'support';
+    }
+
+    function isStaff() {
+      return isAdmin() || isSales() || isSupport();
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    match /users/{uid} {
+      allow read: if isAuthenticated() && (request.auth.uid == uid || isAdmin());
+      allow create: if isAuthenticated() && (request.auth.uid == uid);
+      allow update: if isAuthenticated() && (request.auth.uid == uid || isAdmin());
+    }
+
+    match /customers/{customerId} {
+      allow read: if isStaff();
+      allow create, update: if isStaff();
+      allow delete: if isAdmin();
+    }
+
+    match /leads/{leadId} {
+      allow read: if isStaff();
+      // Allow public creation for inquiries from the landing page
+      allow create: if true; 
+      allow update: if isStaff();
+      allow delete: if isAdmin();
+    }
+
+    match /bookings/{bookingId} {
+      allow read: if isStaff();
+      allow create, update: if isStaff();
+      allow delete: if isAdmin();
+    }
+
+    match /tours/{tourId} {
+      allow read: if true; // Allow public to see tours
+      allow create, update: if isAdmin() || isSales();
+      allow delete: if isAdmin();
+    }
+
+    match /complaints/{complaintId} {
+      allow read: if isStaff();
+      allow create, update: if isStaff();
+      allow delete: if isAdmin();
+    }
+  }
+}
