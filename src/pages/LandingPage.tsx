@@ -80,7 +80,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
-            className="max-w-2xl text-white"
+            className="max-w-2xl text-white mt-12"
           >
             <span className="inline-block px-4 py-1 bg-safari-gold/30 backdrop-blur-sm border border-safari-gold/50 rounded-full text-white text-xs font-bold uppercase tracking-widest mb-6">
               Authentic African Adventures
