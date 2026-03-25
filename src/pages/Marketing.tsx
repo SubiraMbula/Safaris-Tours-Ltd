@@ -7,6 +7,8 @@ export default function Marketing() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [selectedLocation, setSelectedLocation] = useState('');
   const [selectedPreference, setSelectedPreference] = useState('');
+  const [isSending, setIsSending] = useState(false);
+  const [sentSuccess, setSentSuccess] = useState(false);
 
   useEffect(() => {
     const unsub = dbService.subscribeToCollection<Customer>('customers', setCustomers);
@@ -21,6 +23,31 @@ export default function Marketing() {
     const matchPreference = !selectedPreference || c.preferences.includes(selectedPreference);
     return matchLocation && matchPreference;
   });
+
+  const handleSendCampaign = () => {
+    if (filteredCustomers.length === 0) return;
+    setIsSending(true);
+    // Simulate campaign sending
+    setTimeout(() => {
+      setIsSending(false);
+      setSentSuccess(true);
+      setTimeout(() => setSentSuccess(false), 3000);
+    }, 1500);
+  };
+
+  // Calculate segment stats
+  const segmentPercentage = customers.length > 0 
+    ? Math.round((filteredCustomers.length / customers.length) * 100) 
+    : 0;
+  
+  const topPreference = filteredCustomers.length > 0
+    ? Object.entries(
+        filteredCustomers.flatMap(c => c.preferences).reduce((acc, p) => {
+          acc[p] = (acc[p] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>)
+      ).sort((a, b) => b[1] - a[1])[0]?.[0]
+    : 'N/A';
 
   return (
     <div className="space-y-8">
@@ -114,13 +141,25 @@ export default function Marketing() {
           <div className="glass-card p-6">
             <h3 className="font-serif text-lg mb-4">Quick Actions</h3>
             <div className="space-y-3">
-              <button className="w-full flex items-center gap-3 p-4 rounded-xl border border-stone-100 hover:border-[#5A5A40] hover:bg-[#5A5A40]/5 transition-all group">
-                <div className="p-2 bg-blue-100 text-blue-600 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-colors">
+              <button 
+                onClick={handleSendCampaign}
+                disabled={isSending || filteredCustomers.length === 0}
+                className={`w-full flex items-center gap-3 p-4 rounded-xl border transition-all group ${
+                  sentSuccess ? 'border-emerald-500 bg-emerald-50' : 'border-stone-100 hover:border-[#5A5A40] hover:bg-[#5A5A40]/5'
+                } ${isSending ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <div className={`p-2 rounded-lg transition-colors ${
+                  sentSuccess ? 'bg-emerald-500 text-white' : 'bg-blue-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white'
+                }`}>
                   <Mail size={20} />
                 </div>
                 <div className="text-left">
-                  <p className="text-sm font-medium">Email Campaign</p>
-                  <p className="text-[10px] text-stone-400">Send safari updates to this segment</p>
+                  <p className="text-sm font-medium">
+                    {isSending ? 'Sending...' : sentSuccess ? 'Campaign Sent!' : 'Email Campaign'}
+                  </p>
+                  <p className="text-[10px] text-stone-400">
+                    {sentSuccess ? 'Successfully dispatched' : `Send to ${filteredCustomers.length} travelers`}
+                  </p>
                 </div>
               </button>
               <button className="w-full flex items-center gap-3 p-4 rounded-xl border border-stone-100 hover:border-[#5A5A40] hover:bg-[#5A5A40]/5 transition-all group">
@@ -136,17 +175,44 @@ export default function Marketing() {
           </div>
 
           <div className="glass-card p-6 bg-[#5A5A40] text-white">
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-3 mb-6">
               <Users size={24} />
               <h3 className="font-serif text-lg">Segment Summary</h3>
             </div>
-            <div className="space-y-4">
-              <div>
-                <p className="text-[10px] uppercase tracking-widest text-white/60">Reach</p>
-                <p className="text-3xl font-serif">{filteredCustomers.length} Travelers</p>
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-white/60 mb-1">Reach</p>
+                  <p className="text-2xl font-serif">{filteredCustomers.length}</p>
+                  <p className="text-[10px] text-white/40">{segmentPercentage}% of total</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-white/60 mb-1">Top Interest</p>
+                  <p className="text-lg font-serif truncate">{topPreference}</p>
+                </div>
               </div>
+              
               <div className="pt-4 border-t border-white/10">
-                <p className="text-xs italic text-white/80">"Targeting travelers in {selectedLocation || 'all regions'} who enjoy {selectedPreference || 'various safari experiences'}."</p>
+                <p className="text-[10px] uppercase tracking-widest text-white/60 mb-2">Segment Focus</p>
+                <p className="text-xs italic text-white/80 leading-relaxed">
+                  "Targeting travelers in <span className="text-white font-medium">{selectedLocation || 'all regions'}</span> who enjoy <span className="text-white font-medium">{selectedPreference || 'various safari experiences'}</span>."
+                </p>
+              </div>
+
+              <div className="pt-4 border-t border-white/10 flex items-center justify-between">
+                <div className="flex -space-x-2">
+                  {[...Array(Math.min(3, filteredCustomers.length))].map((_, i) => (
+                    <div key={i} className="w-6 h-6 rounded-full border-2 border-[#5A5A40] bg-stone-400 flex items-center justify-center text-[8px] font-bold">
+                      {filteredCustomers[i].name[0]}
+                    </div>
+                  ))}
+                  {filteredCustomers.length > 3 && (
+                    <div className="w-6 h-6 rounded-full border-2 border-[#5A5A40] bg-stone-600 flex items-center justify-center text-[8px] font-bold">
+                      +{filteredCustomers.length - 3}
+                    </div>
+                  )}
+                </div>
+                <p className="text-[10px] text-white/60">Active Segment</p>
               </div>
             </div>
           </div>
