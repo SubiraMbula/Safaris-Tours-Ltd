@@ -198,8 +198,8 @@ export default function LandingPage() {
               { name: 'Amboseli', img: 'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&q=80&w=1000', price: 'From $950' },
               { name: 'Serengeti', img: 'https://images.unsplash.com/photo-1534171472159-edb6d1e0b63c?auto=format&fit=crop&q=80&w=1000', price: 'From $1,500' },
               { name: 'Tsavo East & West', img: 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&q=80&w=1000', price: 'From $850' },
-              { name: 'Samburu Reserve', img: 'https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&q=80&w=1000', price: 'From $1,100' },
-              { name: 'Diani Beach', img: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&q=80&w=1000', price: 'From $700' },
+              { name: 'Samburu Reserve', img: 'https://images.unsplash.com/photo-1535941339077-2dd1c7963098?auto=format&fit=crop&q=80&w=1000', price: 'From $1,100' },
+              { name: 'Diani Beach', img: 'https://images.unsplash.com/photo-1590523741831-ab7e8b8f9c7f?auto=format&fit=crop&q=80&w=1000', price: 'From $700' },
             ].map((dest, i) => (
               <div key={i} className="group cursor-pointer overflow-hidden rounded-3xl relative aspect-[4/5]">
                 <img 
