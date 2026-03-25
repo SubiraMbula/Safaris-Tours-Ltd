@@ -6,6 +6,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format, addDays } from 'date-fns';
+import { useAuth } from '../components/AuthProvider';
 
 const bookingSchema = z.object({
   customerId: z.string().min(1, 'Customer is required'),
@@ -21,10 +22,13 @@ const bookingSchema = z.object({
 type BookingFormData = z.infer<typeof bookingSchema>;
 
 export default function Bookings() {
+  const { profile } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [tours, setTours] = useState<Tour[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [bookingToDelete, setBookingToDelete] = useState<string | null>(null);
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
 
   const { register, handleSubmit, reset, setValue, control, formState: { errors } } = useForm<BookingFormData>({
@@ -100,6 +104,19 @@ export default function Bookings() {
     reset();
   };
 
+  const handleDeleteClick = (id: string) => {
+    setBookingToDelete(id);
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (bookingToDelete) {
+      await dbService.deleteDocument('bookings', bookingToDelete);
+      setIsDeleteConfirmOpen(false);
+      setBookingToDelete(null);
+    }
+  };
+
   const getCustomerName = (id: string) => customers.find(c => c.id === id)?.name || 'Unknown';
   const getTourName = (id: string) => tours.find(t => t.id === id)?.name || 'Custom Package';
 
@@ -145,6 +162,9 @@ export default function Bookings() {
                 </div>
                 <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button onClick={() => openModal(booking)} className="text-stone-400 hover:text-[#5A5A40]"><Edit2 size={16} /></button>
+                  {profile?.role === 'admin' && (
+                    <button onClick={() => handleDeleteClick(booking.id)} className="text-stone-400 hover:text-red-500"><Trash2 size={16} /></button>
+                  )}
                 </div>
               </div>
               
@@ -298,6 +318,33 @@ export default function Bookings() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {isDeleteConfirmOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+          <div className="glass-card w-full max-w-md p-8 text-center">
+            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Trash2 size={32} />
+            </div>
+            <h3 className="text-xl font-serif mb-2">Delete Booking?</h3>
+            <p className="text-stone-500 mb-8">
+              Are you sure you want to delete this booking? This action cannot be undone.
+            </p>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setIsDeleteConfirmOpen(false)}
+                className="flex-1 px-6 py-3 rounded-xl border border-stone-200 text-stone-600 hover:bg-stone-50 transition-all"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={confirmDelete}
+                className="flex-1 px-6 py-3 rounded-xl bg-red-600 text-white hover:bg-red-700 transition-all font-bold"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

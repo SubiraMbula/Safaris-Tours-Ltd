@@ -120,7 +120,44 @@ export const seedSampleData = async () => {
       }
     }
 
-    alert('Sample data seeded successfully! Existing records were skipped to avoid duplicates.');
+    // Seed Bookings
+    console.log('Seeding bookings...');
+    const allTours = await dbService.getCollection<Tour>('tours');
+    const allCustomers = await dbService.getCollection<Customer>('customers');
+    const existingBookings = await dbService.getCollection<any>('bookings');
+
+    if (allTours.length > 0 && allCustomers.length > 0 && existingBookings.length === 0) {
+      const bookingsToSeed = [
+        {
+          customerId: allCustomers[0].id,
+          tourId: allTours[0].id,
+          status: 'confirmed',
+          paymentStatus: 'paid',
+          totalAmount: allTours[0].price,
+          startDate: new Date(Date.now() + 86400000 * 30).toISOString().split('T')[0],
+          endDate: new Date(Date.now() + 86400000 * 37).toISOString().split('T')[0],
+          packageDetails: `${allTours[0].name} - Full Package`,
+          createdAt: new Date().toISOString()
+        },
+        {
+          customerId: allCustomers[1].id,
+          tourId: allTours[1].id,
+          status: 'pending',
+          paymentStatus: 'partial',
+          totalAmount: allTours[1].price,
+          startDate: new Date(Date.now() + 86400000 * 45).toISOString().split('T')[0],
+          endDate: new Date(Date.now() + 86400000 * 50).toISOString().split('T')[0],
+          packageDetails: `${allTours[1].name} - Photography Focus`,
+          createdAt: new Date().toISOString()
+        }
+      ];
+
+      for (const booking of bookingsToSeed) {
+        await dbService.createDocument('bookings', booking);
+      }
+    }
+
+    alert('Sample data seeded successfully! Existing records were skipped, and sample bookings were created.');
   } catch (error) {
     console.error('Error seeding data:', error);
     alert('Error seeding data. Check console for details.');
