@@ -5,6 +5,7 @@ import { Plus, Search, Edit2, Trash2, X, User } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useAuth } from '../components/AuthProvider';
 
 const customerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -17,8 +18,11 @@ const customerSchema = z.object({
 type CustomerFormData = z.infer<typeof customerSchema>;
 
 export default function Customers() {
+  const { profile } = useAuth();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [customerToDelete, setCustomerToDelete] = useState<string | null>(null);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -70,9 +74,16 @@ export default function Customers() {
     reset();
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this customer?')) {
-      await dbService.deleteDocument('customers', id);
+  const handleDeleteClick = (id: string) => {
+    setCustomerToDelete(id);
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (customerToDelete) {
+      await dbService.deleteDocument('customers', customerToDelete);
+      setIsDeleteConfirmOpen(false);
+      setCustomerToDelete(null);
     }
   };
 
@@ -149,9 +160,11 @@ export default function Customers() {
                       <button onClick={() => openModal(customer)} className="p-2 text-stone-400 hover:text-[#5A5A40] transition-colors">
                         <Edit2 size={18} />
                       </button>
-                      <button onClick={() => handleDelete(customer.id)} className="p-2 text-stone-400 hover:text-red-500 transition-colors">
-                        <Trash2 size={18} />
-                      </button>
+                      {profile?.role === 'admin' && (
+                        <button onClick={() => handleDeleteClick(customer.id)} className="p-2 text-stone-400 hover:text-red-500 transition-colors">
+                          <Trash2 size={18} />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -233,6 +246,33 @@ export default function Customers() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {isDeleteConfirmOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+          <div className="glass-card w-full max-w-md p-8 text-center">
+            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Trash2 size={32} />
+            </div>
+            <h3 className="text-xl font-serif mb-2">Delete Customer?</h3>
+            <p className="text-stone-500 mb-8">
+              Are you sure you want to delete this customer? This action cannot be undone.
+            </p>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setIsDeleteConfirmOpen(false)}
+                className="flex-1 px-6 py-3 rounded-xl border border-stone-200 text-stone-600 hover:bg-stone-50 transition-all"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={confirmDelete}
+                className="flex-1 px-6 py-3 rounded-xl bg-red-600 text-white hover:bg-red-700 transition-all font-bold"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

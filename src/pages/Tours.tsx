@@ -5,6 +5,7 @@ import { Plus, Search, Edit2, Trash2, X, MapPin, Users, Clock, Tag, Compass } fr
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useAuth } from '../components/AuthProvider';
 
 const tourSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -20,8 +21,11 @@ const tourSchema = z.object({
 type TourFormData = z.infer<typeof tourSchema>;
 
 export default function Tours() {
+  const { profile } = useAuth();
   const [tours, setTours] = useState<Tour[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [tourToDelete, setTourToDelete] = useState<string | null>(null);
   const [editingTour, setEditingTour] = useState<Tour | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -75,9 +79,16 @@ export default function Tours() {
     reset();
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this tour?')) {
-      await dbService.deleteDocument('tours', id);
+  const handleDeleteClick = (id: string) => {
+    setTourToDelete(id);
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (tourToDelete) {
+      await dbService.deleteDocument('tours', tourToDelete);
+      setIsDeleteConfirmOpen(false);
+      setTourToDelete(null);
     }
   };
 
@@ -135,9 +146,11 @@ export default function Tours() {
                   <button onClick={() => openModal(tour)} className="p-1 text-stone-400 hover:text-[#5A5A40]">
                     <Edit2 size={16} />
                   </button>
-                  <button onClick={() => handleDelete(tour.id)} className="p-1 text-stone-400 hover:text-red-500">
-                    <Trash2 size={16} />
-                  </button>
+                  {profile?.role === 'admin' && (
+                    <button onClick={() => handleDeleteClick(tour.id)} className="p-1 text-stone-400 hover:text-red-500">
+                      <Trash2 size={16} />
+                    </button>
+                  )}
                 </div>
               </div>
               
@@ -271,6 +284,33 @@ export default function Tours() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {isDeleteConfirmOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+          <div className="glass-card w-full max-w-md p-8 text-center">
+            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Trash2 size={32} />
+            </div>
+            <h3 className="text-xl font-serif mb-2">Delete Tour?</h3>
+            <p className="text-stone-500 mb-8">
+              Are you sure you want to delete this tour? This action cannot be undone.
+            </p>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setIsDeleteConfirmOpen(false)}
+                className="flex-1 px-6 py-3 rounded-xl border border-stone-200 text-stone-600 hover:bg-stone-50 transition-all"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={confirmDelete}
+                className="flex-1 px-6 py-3 rounded-xl bg-red-600 text-white hover:bg-red-700 transition-all font-bold"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       )}
