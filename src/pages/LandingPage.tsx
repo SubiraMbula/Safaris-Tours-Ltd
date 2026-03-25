@@ -94,12 +94,6 @@ export default function LandingPage() {
               From the Great Migration to private luxury retreats, we craft 
               unforgettable journeys.
             </p>
-            <div className="flex flex-wrap gap-4">
-              <a href="#inquiry" className="btn-gold px-10 py-4 text-lg font-bold hover:scale-105 transition-transform">Book Your Safari</a>
-              <button className="px-10 py-4 text-lg font-bold border-2 border-white rounded-full hover:bg-white hover:text-safari-green transition-all">
-                View Itineraries
-              </button>
-            </div>
           </motion.div>
         </div>
       </section>
