@@ -174,21 +174,21 @@ export default function Marketing() {
             </div>
           </div>
 
-          <div className="glass-card p-6 bg-[#5A5A40] text-white">
+          <div className="bg-[#5A5A40] p-6 rounded-2xl shadow-lg text-white border border-white/10">
             <div className="flex items-center gap-3 mb-6">
-              <Users size={24} />
-              <h3 className="font-serif text-lg">Segment Summary</h3>
+              <Users size={24} className="text-white/80" />
+              <h3 className="font-serif text-lg !text-white">Segment Summary</h3>
             </div>
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-[10px] uppercase tracking-widest text-white/60 mb-1">Reach</p>
-                  <p className="text-2xl font-serif">{filteredCustomers.length}</p>
+                  <p className="text-2xl font-serif text-white">{filteredCustomers.length}</p>
                   <p className="text-[10px] text-white/40">{segmentPercentage}% of total</p>
                 </div>
                 <div>
                   <p className="text-[10px] uppercase tracking-widest text-white/60 mb-1">Top Interest</p>
-                  <p className="text-lg font-serif truncate">{topPreference}</p>
+                  <p className="text-lg font-serif text-white truncate">{topPreference}</p>
                 </div>
               </div>
               
@@ -202,12 +202,12 @@ export default function Marketing() {
               <div className="pt-4 border-t border-white/10 flex items-center justify-between">
                 <div className="flex -space-x-2">
                   {[...Array(Math.min(3, filteredCustomers.length))].map((_, i) => (
-                    <div key={i} className="w-6 h-6 rounded-full border-2 border-[#5A5A40] bg-stone-400 flex items-center justify-center text-[8px] font-bold">
+                    <div key={i} className="w-6 h-6 rounded-full border-2 border-[#5A5A40] bg-stone-400 flex items-center justify-center text-[8px] font-bold text-white">
                       {filteredCustomers[i].name[0]}
                     </div>
                   ))}
                   {filteredCustomers.length > 3 && (
-                    <div className="w-6 h-6 rounded-full border-2 border-[#5A5A40] bg-stone-600 flex items-center justify-center text-[8px] font-bold">
+                    <div className="w-6 h-6 rounded-full border-2 border-[#5A5A40] bg-stone-600 flex items-center justify-center text-[8px] font-bold text-white">
                       +{filteredCustomers.length - 3}
                     </div>
                   )}
