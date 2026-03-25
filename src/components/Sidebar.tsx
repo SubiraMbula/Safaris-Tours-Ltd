@@ -9,7 +9,8 @@ import {
   BarChart3, 
   Megaphone,
   LogOut,
-  Compass
+  Compass,
+  X
 } from 'lucide-react';
 import { useAuth } from './AuthProvider';
 import { clsx, type ClassValue } from 'clsx';
@@ -79,17 +80,25 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       )}
 
       <aside className={cn(
-        "w-64 h-screen bg-safari-green text-white flex flex-col fixed left-0 top-0 z-50 transition-transform duration-300 lg:translate-x-0",
+        "w-64 h-screen bg-safari-green text-white flex flex-col fixed left-0 top-0 z-50 transition-transform duration-300 lg:translate-x-0 shadow-2xl lg:shadow-none",
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}>
-        <div className="p-6 flex items-center gap-3 border-b border-white/10">
-          <div className="w-10 h-10 bg-safari-gold rounded-lg flex items-center justify-center">
-            <Compass className="text-safari-green" size={24} />
+        <div className="p-6 flex items-center justify-between border-b border-white/10">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-safari-gold rounded-lg flex items-center justify-center">
+              <Compass className="text-safari-green" size={24} />
+            </div>
+            <div>
+              <h2 className="font-serif text-lg leading-tight">Safaris&Tours</h2>
+              <span className="text-[10px] uppercase tracking-widest text-white/50">CRM System</span>
+            </div>
           </div>
-          <div>
-            <h2 className="font-serif text-lg leading-tight">Safaris&Tours</h2>
-            <span className="text-[10px] uppercase tracking-widest text-white/50">CRM System</span>
-          </div>
+          <button 
+            onClick={onClose}
+            className="lg:hidden p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+          >
+            <X size={24} />
+          </button>
         </div>
 
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">

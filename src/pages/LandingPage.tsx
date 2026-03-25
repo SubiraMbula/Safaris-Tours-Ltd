@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Compass, MapPin, Camera, Utensils, ShieldCheck, ArrowRight, Instagram, Facebook, Twitter, CheckCircle2 } from 'lucide-react';
+import { Compass, MapPin, Camera, Utensils, ShieldCheck, ArrowRight, Instagram, Facebook, Twitter, CheckCircle2, Menu, X } from 'lucide-react';
 import { motion } from 'motion/react';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -18,6 +18,7 @@ const Feature = ({ icon: Icon, title, description }: any) => (
 export default function LandingPage() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -52,13 +53,37 @@ export default function LandingPage() {
             <Compass className="text-safari-green" size={32} />
             <span className="font-serif text-2xl text-safari-green">Safaris&Tours</span>
           </div>
+          
+          {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-stone-700">
             <a href="#destinations" className="hover:text-safari-green transition-colors">Destinations</a>
             <a href="#experiences" className="hover:text-safari-green transition-colors">Experiences</a>
             <a href="#about" className="hover:text-safari-green transition-colors">About Us</a>
             <Link to="/admin" className="btn-primary">Staff Login</Link>
           </div>
+
+          {/* Mobile Menu Toggle */}
+          <button 
+            className="md:hidden p-2 text-safari-green"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
+          </button>
         </div>
+
+        {/* Mobile Nav Overlay */}
+        {isMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="md:hidden bg-white border-b border-safari-earth/10 p-6 flex flex-col gap-6 text-lg font-medium text-stone-700 shadow-xl"
+          >
+            <a href="#destinations" onClick={() => setIsMenuOpen(false)} className="hover:text-safari-green transition-colors">Destinations</a>
+            <a href="#experiences" onClick={() => setIsMenuOpen(false)} className="hover:text-safari-green transition-colors">Experiences</a>
+            <a href="#about" onClick={() => setIsMenuOpen(false)} className="hover:text-safari-green transition-colors">About Us</a>
+            <Link to="/admin" onClick={() => setIsMenuOpen(false)} className="btn-primary text-center">Staff Login</Link>
+          </motion.div>
+        )}
       </nav>
 
       {/* Hero Section */}
