@@ -59,10 +59,38 @@ function cn(...inputs: ClassValue[]) {
 import { useAuth } from '../components/AuthProvider';
 import { seedSampleData } from '../services/seedData';
 import { Database } from 'lucide-react';
+import { dbService } from '../services/db';
+import { useState, useEffect } from 'react';
 
 export default function Dashboard() {
   const { profile } = useAuth();
+  const [stats, setStats] = useState({
+    customers: '0',
+    tours: '0',
+    bookings: '0',
+    revenue: '$0'
+  });
   
+  useEffect(() => {
+    const unsubTours = dbService.subscribeToCollection('tours', (data) => {
+      setStats(prev => ({ ...prev, tours: data.length.toString() }));
+    });
+    const unsubCustomers = dbService.subscribeToCollection('customers', (data) => {
+      setStats(prev => ({ ...prev, customers: data.length.toLocaleString() }));
+    });
+    const unsubBookings = dbService.subscribeToCollection('bookings', (data) => {
+      setStats(prev => ({ ...prev, bookings: data.length.toLocaleString() }));
+      const totalRevenue = data.reduce((acc: number, curr: any) => acc + (curr.totalAmount || 0), 0);
+      setStats(prev => ({ ...prev, revenue: `$${totalRevenue.toLocaleString()}` }));
+    });
+
+    return () => {
+      unsubTours();
+      unsubCustomers();
+      unsubBookings();
+    };
+  }, []);
+
   const roleDisplay = profile?.role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Staff';
 
   return (
@@ -85,16 +113,16 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {(profile?.role === 'admin' || profile?.role === 'sales_manager' || profile?.role === 'sales' || profile?.role === 'support') && (
-          <StatCard title="Total Customers" value="1,284" icon={Users} trend="up" trendValue="12" />
+          <StatCard title="Total Customers" value={stats.customers} icon={Users} trend="up" trendValue="12" />
         )}
         {(profile?.role === 'admin' || profile?.role === 'sales_manager' || profile?.role === 'sales') && (
-          <StatCard title="Tours Available" value="12" icon={Compass} trend="up" trendValue="5" />
+          <StatCard title="Tours Available" value={stats.tours} icon={Compass} trend="up" trendValue="5" />
         )}
         {(profile?.role === 'admin' || profile?.role === 'sales_manager' || profile?.role === 'sales') && (
-          <StatCard title="Confirmed Bookings" value="156" icon={CalendarCheck} trend="down" trendValue="3" />
+          <StatCard title="Confirmed Bookings" value={stats.bookings} icon={CalendarCheck} trend="down" trendValue="3" />
         )}
         {(profile?.role === 'admin' || profile?.role === 'sales_manager' || profile?.role === 'marketing_manager') && (
-          <StatCard title="Monthly Revenue" value="$42,500" icon={TrendingUp} trend="up" trendValue="24" />
+          <StatCard title="Monthly Revenue" value={stats.revenue} icon={TrendingUp} trend="up" trendValue="24" />
         )}
       </div>
 

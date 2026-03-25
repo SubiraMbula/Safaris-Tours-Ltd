@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { dbService } from '../services/db';
 import { Tour } from '../types';
-import { Plus, Search, Edit2, Trash2, X, MapPin, Users, Clock, Tag } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, X, MapPin, Users, Clock, Tag, Compass } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -113,16 +113,21 @@ export default function Tours() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredTours.map((tour) => (
           <div key={tour.id} className="glass-card overflow-hidden group">
-            {tour.imageUrl && (
-              <div className="h-48 overflow-hidden">
+            <div className="h-48 overflow-hidden bg-stone-200 flex items-center justify-center relative">
+              {tour.imageUrl ? (
                 <img 
                   src={tour.imageUrl} 
                   alt={tour.name} 
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&q=80&w=1000';
+                  }}
                 />
-              </div>
-            )}
+              ) : (
+                <Compass className="text-stone-400" size={48} />
+              )}
+            </div>
             <div className="p-6">
               <div className="flex justify-between items-start mb-2">
                 <h3 className="text-xl font-serif text-[#5A5A40]">{tour.name}</h3>
